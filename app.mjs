@@ -1,11 +1,18 @@
-import {dateStart, dayKey, slotAt, slotsForDay, matchesFilter} from './schedule.mjs?v=4';
+import {dateStart, dayKey, slotAt, slotsForDay, matchesFilter} from './schedule.mjs?v=5';
+import {languages, translate, gameName, chooseLanguage} from './i18n.mjs?v=5';
 const $ = id => document.getElementById(id);
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 let data;
+let entries = [], mapIds = [];
+let savedLanguage;
+try {savedLanguage=localStorage.getItem('gbo2-language');} catch {}
+let language = chooseLanguage(location.search,savedLanguage,navigator.languages);
+const t = (key,values) => translate(language,key,values);
+const mapName = code => gameName(language,'maps',code,data.maps[code]);
 let mode = 'all';
 const offset = () => Number($('timezone').value);
 const filters = () => ({mode, cost:$('cost').value, environment:$('environment').value, map:$('map').value});
-const modeName = value => value === 'rated' ? '分級戰' : '快速戰';
+const modeName = value => t(value);
 
 function clock(instant) {
   return new Date(instant + offset()*60000).toISOString().slice(11,16);
@@ -16,18 +23,18 @@ function timeRange(slot) {return `${clock(slot.start)}–${clock(slot.end)}`;}
 function matchCard(match, compact = false) {
   const situation = data.situations?.[match.situationId];
   const random = match.maps.length > 1;
-  const title = random ? (match.environment === 'space' ? '宇宙隨機' : '地上隨機') : data.maps[match.maps[0]];
-  const chips = match.maps.map(code => `<span class="${String(code)===$('map').value?'selected':''}">${escape(data.maps[code] || `地圖 ${code}`)}</span>`).join('');
-  const tag = match.restriction || (match.weekend ? '週末限定戰' : match.special ? '特殊場次' : '');
-  const roster = situation ? `<details><summary>情境機體 · A／B 隊</summary>${Object.entries(situation.teams).map(([team, units])=>`<p class="small" style="margin-top:8px">${escape(team)} 隊</p><div class="pool">${units.map(unit=>`<span>${escape(unit.name)} · COST ${unit.cost}</span>`).join('')}</div>`).join('')}<p class="small" style="margin-top:8px">系統配發固定機體，採用情境專用性能。</p></details>` : '';
-  return `<div class="${compact?'compact-match':'match'}"><div><div class="cost-title mono">${situation?'出擊機體':'COST'}</div><div class="cost mono ${match.cost===0?'unlimited':''}">${situation?'固定機體':match.cost||'無限制'}</div></div><div>${situation?`<div class="map-title">${escape(situation.title)}</div><div class="small muted">${escape(title)}</div>`:`<div class="map-title">${escape(title)}</div>`}<div class="match-meta"><span>${match.environment==='space'?'宇宙':'地上'}</span><span>${match.teamSize} 對 ${match.teamSize}</span><span>${escape(match.rule)}</span>${tag?`<span class="tag special">${escape(tag)}</span>`:''}</div>${random?`<details><summary>候選地圖 · ${match.maps.length} 張</summary><div class="pool">${chips}</div></details>`:''}${roster}</div></div>`;
+  const title = random ? t(match.environment==='space'?'randomSpace':'randomGround') : mapName(match.maps[0]);
+  const chips = match.maps.map(code => `<span class="${String(code)===$('map').value?'selected':''}">${escape(mapName(code))}</span>`).join('');
+  const tag = match.restriction ? gameName(language,'restrictions',match.restriction,match.restriction) : match.weekend ? t('weekend') : match.special ? t('special') : '';
+  const roster = situation ? `<details><summary>${t('roster')}</summary>${Object.entries(situation.teams).map(([team, units])=>`<p class="small" style="margin-top:8px">${t('team',{team})}</p><div class="pool">${units.map(unit=>`<span>${escape(gameName(language,'units',unit.name,unit.name))} · COST ${unit.cost}</span>`).join('')}</div>`).join('')}<p class="small" style="margin-top:8px">${t('rosterNote')}</p></details>` : '';
+  return `<div class="${compact?'compact-match':'match'}"><div><div class="cost-title mono">${situation?t('sortieMs'):'COST'}</div><div class="cost mono ${match.cost===0?'unlimited':''}">${situation?t('fixedMs'):match.cost||t('unrestricted')}</div></div><div>${situation?`<div class="map-title">${escape(gameName(language,'situations',match.situationId,situation.title))}</div><div class="small muted">${escape(title)}</div>`:`<div class="map-title">${escape(title)}</div>`}<div class="match-meta"><span>${t(match.environment)}</span><span>${t('players',{size:match.teamSize})}</span><span>${escape(gameName(language,'rules',match.rule,match.rule))}</span>${tag?`<span class="tag special">${escape(tag)}</span>`:''}</div>${random?`<details><summary>${t('mapPool',{count:match.maps.length})}</summary><div class="pool">${chips}</div></details>`:''}${roster}</div></div>`;
 }
 
 function groups(matches, current = false) {
   return ['rated','quick'].filter(value => mode==='all'||mode===value).map(value => {
     const entries = matches.filter(match=>match.mode===value);
-    if (current) return `<div class="mode-panel ${value}"><div class="panel-heading"><h3>${modeName(value)}</h3><span class="small muted">${entries.length} 個場次</span></div>${entries.length?entries.map(match=>matchCard(match)).join(''):'<p class="empty">此時段沒有符合篩選的場次。</p>'}</div>`;
-    return `<div class="${value}-group"><h3 class="group-title">${modeName(value)} · ${entries.length}</h3>${entries.length?entries.map(match=>matchCard(match,true)).join(''):'<p class="small muted">沒有符合的場次</p>'}</div>`;
+    if (current) return `<div class="mode-panel ${value}"><div class="panel-heading"><h3>${modeName(value)}</h3><span class="small muted">${t('matchCount',{count:entries.length})}</span></div>${entries.length?entries.map(match=>matchCard(match)).join(''):`<p class="empty">${t('currentEmpty')}</p>`}</div>`;
+    return `<div class="${value}-group"><h3 class="group-title">${modeName(value)} · ${entries.length}</h3>${entries.length?entries.map(match=>matchCard(match,true)).join(''):`<p class="small muted">${t('empty')}</p>`}</div>`;
   }).join('');
 }
 
@@ -38,46 +45,74 @@ function renderCurrent() {
   $('current').innerHTML = groups(matchesFilter(slot.matches,filters()),true);
   $('current').classList.toggle('single',mode!=='all');
   const minutes = Math.max(1,Math.ceil((slot.end-now)/60000));
-  $('countdown').innerHTML = `下次切換 <strong class="mono">${clock(slot.end)}</strong> · 約 ${minutes} 分鐘後`;
+  $('countdown').innerHTML = t('countdown',{time:`<strong class="mono">${clock(slot.end)}</strong>`,minutes});
 }
 
 function renderDay() {
   const date = $('date').value;
   const slots = slotsForDay(data,date,offset(),filters());
-  const weekday = new Date(date+'T00:00:00Z').getUTCDay();
-  $('day-label').textContent = `${date} 星期${'日一二三四五六'[weekday]}`;
-  $('result-count').textContent = `${slots.length} 個時段 · ${slots.reduce((sum,slot)=>sum+slot.matches.length,0)} 個場次`;
+  const weekday = new Intl.DateTimeFormat(language,{weekday:'long',timeZone:'UTC'}).format(new Date(date+'T00:00:00Z'));
+  $('day-label').textContent = `${date} ${weekday}`;
+  $('result-count').textContent = t('stats',{slots:slots.length,matches:slots.reduce((sum,slot)=>sum+slot.matches.length,0)});
   $('timeline').innerHTML = slots.length ? slots.map(slot => {
     const active = Date.now()>=slot.start&&Date.now()<slot.end;
     const from = dayKey(slot.start,offset());
     const to = dayKey(slot.end,offset());
-    const label = from<date?'前日開始':to>date?'跨至翌日':'';
-    return `<article class="time-row${active?' active':''}"><div class="time-label"><div>${label?`<div class="date-fragment">${label}</div>`:''}<span class="mono">${timeRange(slot)}</span></div>${active?'<span class="tag">目前時段</span>':''}</div><div class="timeline-groups${mode!=='all'?' single':''}">${groups(slot.matches)}</div></article>`;
-  }).join('') : '<p class="empty">此日期沒有符合篩選的場次。試試其他 COST 或地圖，或清除篩選。</p>';
+    const label = from<date?t('previousDay'):to>date?t('nextDay'):'';
+    return `<article class="time-row${active?' active':''}"><div class="time-label"><div>${label?`<div class="date-fragment">${label}</div>`:''}<span class="mono">${timeRange(slot)}</span></div>${active?`<span class="tag">${t('current')}</span>`:''}</div><div class="timeline-groups${mode!=='all'?' single':''}">${groups(slot.matches)}</div></article>`;
+  }).join('') : `<p class="empty">${t('dayEmpty')}</p>`;
 }
 
 function render() {
   try {renderCurrent();renderDay();$('status').hidden=true;}
-  catch(error) {$('status').hidden=false;$('status').className='error';$('status').textContent=error.message;}
+  catch {$('status').hidden=false;$('status').className='error';$('status').textContent=t('invalidDate');}
 }
 
 function populate(select, values) {
+  const selected=select.value;
+  select.length=1;
   for(const [value,label] of values) {
     const option=document.createElement('option');option.value=String(value);option.textContent=label;select.append(option);
+  }
+  select.value=[...select.options].some(option=>option.value===selected)?selected:'all';
+}
+
+function applyLanguage() {
+  document.documentElement.lang=language;
+  document.title=t('pageTitle');
+  document.querySelector('meta[name="description"]').content=t('description');
+  $('language').value=language;
+  for(const element of document.querySelectorAll('[data-i18n]')) element.textContent=t(element.dataset.i18n);
+  for(const element of document.querySelectorAll('[data-i18n-aria-label]')) element.setAttribute('aria-label',t(element.dataset.i18nAriaLabel));
+  const official=`https://bo2.ggame.jp/${language==='ja'?'jp':language==='en'?'en':'tw'}/`;
+  $('official-site').href=official;
+  $('official-news').href=official+'info/';
+  if(data) {
+    $('data-date').textContent=t('dataDate',{date:dayKey(Date.parse(data.updatedAt),540)});
+    populate($('cost'),[...new Set(entries.map(row=>row.cost))].sort((a,b)=>a-b).map(value=>[value,value===0?t('freeCost'):String(value)]));
+    populate($('map'),mapIds.map(id=>[id,mapName(id)]).sort((a,b)=>a[1].localeCompare(b[1],language)));
   }
 }
 
 async function start() {
-  const response=await fetch('schedule-data.json?v=4', {cache:'no-cache'});
-  if(!response.ok) throw new Error('排程資料讀取失敗，請重新整理。');
-  data=await response.json();
-  if(data.schemaVersion!==1||!/^\d{8}$/.test(data.version)||data.scheduleOffsetMinutes!==540||!data.modes?.rated||!data.modes?.quick) throw new Error('排程資料格式不正確。');
+  applyLanguage();
+  $('language').addEventListener('change',()=>{
+    language=$('language').value;
+    try {localStorage.setItem('gbo2-language',language);} catch {}
+    const url=new URL(location.href);url.searchParams.set('lang',language);history.replaceState(null,'',url);
+    applyLanguage();
+    if(data) render();
+    else if($('status').classList.contains('error')) $('status').textContent=t('fetchError');
+  });
+  const response=await fetch('schedule-data.json?v=5', {cache:'no-cache'});
+  if(!response.ok) throw new Error(t('fetchError'));
+  const snapshot=await response.json();
+  if(snapshot.schemaVersion!==1||!/^\d{8}$/.test(snapshot.version)||snapshot.scheduleOffsetMinutes!==540||!snapshot.modes?.rated||!snapshot.modes?.quick) throw new Error(t('dataError'));
+  data=snapshot;
   for(const element of document.querySelectorAll('[data-version]')) element.textContent=data.version;
-  $('data-date').textContent=`${dayKey(Date.parse(data.updatedAt),540)} 資料 · 日本時間基準已實機核對`;
-  const entries=Object.values(data.modes).flatMap(blocks=>blocks[0].days.flat());
-  populate($('cost'),[...new Set(entries.map(row=>row.cost))].sort((a,b)=>a-b).map(value=>[value,value===0?'無限制／固定機體':String(value)]));
-  const mapIds=[...new Set(entries.flatMap(row=>row.maps))];
-  populate($('map'),mapIds.map(id=>[id,data.maps[id]]).sort((a,b)=>a[1].localeCompare(b[1],'zh-Hant')));
+  entries=Object.values(data.modes).flatMap(blocks=>blocks.flatMap(block=>block.days.flat()));
+  mapIds=[...new Set(entries.flatMap(row=>row.maps))];
+  applyLanguage();
   $('date').value=dayKey(Date.now(),offset());
   for(const button of document.querySelectorAll('[data-mode]')) button.addEventListener('click',()=>{
     mode=button.dataset.mode;
@@ -100,20 +135,24 @@ async function start() {
   const context=document.modelContext;
   if(context?.registerTool) {
     const lifecycle=new AbortController();
-    const tool={name:'query_ps_match_schedule',title:'查詢 PS 出擊時刻表',
+    const tool={name:'query_ps_match_schedule',title:'PS Match Schedule',
       description:'Read predicted rated and quick match costs and map pools for a date from the current PS snapshot.',
-      inputSchema:{type:'object',properties:{date:{type:'string',pattern:'^\\d{4}-\\d{2}-\\d{2}$'},timezone:{type:'string',enum:['taipei','tokyo','utc']},mode:{type:'string',enum:['all','rated','quick']},cost:{type:'integer',minimum:0,maximum:750},map:{type:'integer'}},required:['date'],additionalProperties:false},
+      inputSchema:{type:'object',properties:{date:{type:'string',pattern:'^\\d{4}-\\d{2}-\\d{2}$'},language:{type:'string',enum:languages},timezone:{type:'string',enum:['taipei','tokyo','utc']},mode:{type:'string',enum:['all','rated','quick']},cost:{type:'integer',minimum:0,maximum:1000},map:{type:'integer'}},required:['date'],additionalProperties:false},
       annotations:{readOnlyHint:true,untrustedContentHint:false},
       execute(input){
-        if(!input||typeof input!=='object'||Array.isArray(input)) throw new Error('查詢格式錯誤。');
-        if(Object.keys(input).some(key=>!['date','timezone','mode','cost','map'].includes(key))) throw new Error('不支援的查詢欄位。');
+        if(!input||typeof input!=='object'||Array.isArray(input)) throw new Error(t('invalidQuery'));
+        if(Object.keys(input).some(key=>!['date','language','timezone','mode','cost','map'].includes(key))) throw new Error(t('invalidQuery'));
+        const outputLanguage=input.language??language;
+        if(!languages.includes(outputLanguage)) throw new Error(t('invalidQuery'));
         const zones={taipei:480,tokyo:540,utc:0};
-        if(input.timezone!==undefined&&!Object.hasOwn(zones,input.timezone)) throw new Error('不支援的時區。');
-        if(input.mode!==undefined&&!['all','rated','quick'].includes(input.mode)) throw new Error('不支援的模式。');
-        if(input.cost!==undefined&&(!Number.isInteger(input.cost)||!entries.some(row=>row.cost===input.cost))) throw new Error('不支援的 COST。');
-        if(input.map!==undefined&&(!Number.isInteger(input.map)||!mapIds.includes(input.map))) throw new Error('不支援的地圖。');
+        if(input.timezone!==undefined&&!Object.hasOwn(zones,input.timezone)) throw new Error(t('invalidQuery'));
+        if(input.mode!==undefined&&!['all','rated','quick'].includes(input.mode)) throw new Error(t('invalidQuery'));
+        if(input.cost!==undefined&&(!Number.isInteger(input.cost)||!entries.some(row=>row.cost===input.cost))) throw new Error(t('invalidQuery'));
+        if(input.map!==undefined&&(!Number.isInteger(input.map)||!mapIds.includes(input.map))) throw new Error(t('invalidQuery'));
+        try {dateStart(input.date,zones[input.timezone??'taipei']);}
+        catch {throw new Error(translate(outputLanguage,'invalidDate'));}
         const query={mode:input.mode??'all',cost:input.cost===undefined?'all':String(input.cost),map:input.map===undefined?'all':String(input.map)};
-        return {version:data.version,predicted:true,slots:slotsForDay(data,input.date,zones[input.timezone??'taipei'],query).map(slot=>({start:new Date(slot.start).toISOString(),end:new Date(slot.end).toISOString(),matches:slot.matches.map(row=>({mode:row.mode,cost:row.cost,rule:row.rule,teamSize:row.teamSize,maps:row.maps.map(id=>({id,name:data.maps[id]})),special:row.special,restriction:row.restriction,situation:data.situations?.[row.situationId]??null}))}))};
+        return {version:data.version,language:outputLanguage,predicted:true,slots:slotsForDay(data,input.date,zones[input.timezone??'taipei'],query).map(slot=>({start:new Date(slot.start).toISOString(),end:new Date(slot.end).toISOString(),matches:slot.matches.map(row=>({mode:row.mode,cost:row.cost,rule:gameName(outputLanguage,'rules',row.rule,row.rule),teamSize:row.teamSize,maps:row.maps.map(id=>({id,name:gameName(outputLanguage,'maps',id,data.maps[id])})),special:row.special,restriction:gameName(outputLanguage,'restrictions',row.restriction,row.restriction),situation:localizedSituation(row.situationId,outputLanguage)}))}))};
       }};
     try {Promise.resolve(context.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});} catch {}
     window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
@@ -122,4 +161,9 @@ async function start() {
   setInterval(render,60000);
 }
 
-start().catch(error=>{$('status').className='error';$('status').textContent=error.message;});
+function localizedSituation(id,language) {
+  const situation=data.situations?.[id];
+  return situation?{title:gameName(language,'situations',id,situation.title),teams:Object.fromEntries(Object.entries(situation.teams).map(([team,units])=>[team,units.map(unit=>({...unit,name:gameName(language,'units',unit.name,unit.name)}))]))}:null;
+}
+
+start().catch(()=>{$('status').className='error';$('status').textContent=t('fetchError');});

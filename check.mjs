@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {dateStart, dayKey, slotAt, slotsForDay, matchesFilter} from './schedule.mjs';
+import {languages, messages, gameNames, translate, chooseLanguage} from './i18n.mjs';
 const text = readFileSync(process.argv[2] ?? new URL('./schedule-data.json', import.meta.url), 'utf8');
 const data = JSON.parse(text);
 const keys = (value, allowed) => assert.deepEqual(Object.keys(value).sort(), allowed.split(' ').sort());
@@ -107,4 +108,28 @@ for (const offset of [0, 480, 540]) for (const date of ['2026-10-04', '2026-12-3
     for (const mode of ['rated', 'quick']) assert.ok(s.matches.filter(m => m.mode === mode).length <= 4);
   }
 }
-console.log('PASS: public field allowlist, privacy, schedules, PS5 sample, event windows, rosters, timezones and filters.');
+const rows = Object.values(data.modes).flatMap(blocks=>blocks.flatMap(block=>block.days.flat()));
+const validText = (value,label) => assert.ok(typeof value==='string' && value.length && !/\uFFFD|@\w+\(/.test(value), `Missing or invalid translation: ${label}`);
+assert.ok(!/https?:|\.tss\b|\.cpk\b|NPWR[0-9]|[a-f0-9]{64}/i.test(JSON.stringify(gameNames)), 'Translations contain source/download metadata');
+for (const language of languages) {
+  assert.deepEqual(Object.keys(messages[language]).sort(), Object.keys(messages['zh-Hant']).sort());
+  for (const key of Object.keys(messages[language])) validText(translate(language,key),`${language}/messages/${key}`);
+  if (language==='zh-Hant') continue;
+  for (const id of Object.keys(data.maps)) validText(gameNames[language].maps[id],`${language}/maps/${id}`);
+  for (const row of rows) {
+    validText(gameNames[language].rules[row.rule],`${language}/rules/${row.rule}`);
+    if (row.restriction) validText(gameNames[language].restrictions[row.restriction],`${language}/restrictions/${row.restriction}`);
+  }
+  for (const [id,situation] of Object.entries(data.situations)) {
+    validText(gameNames[language].situations[id],`${language}/situations/${id}`);
+    for (const team of Object.values(situation.teams)) for (const unit of team) validText(gameNames[language].units[unit.name],`${language}/units/${unit.name}`);
+  }
+}
+assert.equal(translate('en','players',{size:5}), '5 vs 5');
+assert.equal(chooseLanguage('?lang=ja','en',['zh-TW']), 'ja');
+assert.equal(chooseLanguage('?lang=invalid','en',['ja-JP']), 'en');
+assert.equal(chooseLanguage('',null,['fr-FR','ja-JP']), 'ja');
+assert.equal(chooseLanguage('',null,['en-US']), 'en');
+assert.equal(chooseLanguage('',null,['zh-TW']), 'zh-Hant');
+assert.equal(chooseLanguage('',null,['fr-FR']), 'zh-Hant');
+console.log('PASS: public field allowlist, privacy, schedules, event windows, timezones, filters, three-language coverage and language selection.');
