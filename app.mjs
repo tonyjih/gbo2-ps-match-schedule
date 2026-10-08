@@ -1,5 +1,5 @@
-import {dateStart, dayKey, slotAt, slotsForDay, matchesFilter} from './schedule.mjs?v=5';
-import {languages, translate, gameName, chooseLanguage} from './i18n.mjs?v=5';
+import {dateStart, dayKey, slotAt, slotsForDay, matchesFilter} from './schedule.mjs?v=6';
+import {languages, translate, gameName, chooseLanguage} from './i18n.mjs?v=6';
 const $ = id => document.getElementById(id);
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 let data;
@@ -22,12 +22,13 @@ function timeRange(slot) {return `${clock(slot.start)}–${clock(slot.end)}`;}
 
 function matchCard(match, compact = false) {
   const situation = data.situations?.[match.situationId];
+  const periodNote = data.activities?.[match.activityKey]?.windows === null ? `<p class="small muted">${t('periodUnverified')}</p>` : '';
   const random = match.maps.length > 1;
   const title = random ? t(match.environment==='space'?'randomSpace':'randomGround') : mapName(match.maps[0]);
   const chips = match.maps.map(code => `<span class="${String(code)===$('map').value?'selected':''}">${escape(mapName(code))}</span>`).join('');
   const tag = match.restriction ? gameName(language,'restrictions',match.restriction,match.restriction) : match.weekend ? t('weekend') : match.special ? t('special') : '';
   const roster = situation ? `<details><summary>${t('roster')}</summary>${Object.entries(situation.teams).map(([team, units])=>`<p class="small" style="margin-top:8px">${t('team',{team})}</p><div class="pool">${units.map(unit=>`<span>${escape(gameName(language,'units',unit.name,unit.name))} · COST ${unit.cost}</span>`).join('')}</div>`).join('')}<p class="small" style="margin-top:8px">${t('rosterNote')}</p></details>` : '';
-  return `<div class="${compact?'compact-match':'match'}"><div><div class="cost-title mono">${situation?t('sortieMs'):'COST'}</div><div class="cost mono ${match.cost===0?'unlimited':''}">${situation?t('fixedMs'):match.cost||t('unrestricted')}</div></div><div>${situation?`<div class="map-title">${escape(gameName(language,'situations',match.situationId,situation.title))}</div><div class="small muted">${escape(title)}</div>`:`<div class="map-title">${escape(title)}</div>`}<div class="match-meta"><span>${t(match.environment)}</span><span>${t('players',{size:match.teamSize})}</span><span>${escape(gameName(language,'rules',match.rule,match.rule))}</span>${tag?`<span class="tag special">${escape(tag)}</span>`:''}</div>${random?`<details><summary>${t('mapPool',{count:match.maps.length})}</summary><div class="pool">${chips}</div></details>`:''}${roster}</div></div>`;
+  return `<div class="${compact?'compact-match':'match'}"><div><div class="cost-title mono">${situation?t('sortieMs'):'COST'}</div><div class="cost mono ${match.cost===0?'unlimited':''}">${situation?t('fixedMs'):match.cost||t('unrestricted')}</div></div><div>${situation?`<div class="map-title">${escape(gameName(language,'situations',match.situationId,situation.title))}</div><div class="small muted">${escape(title)}</div>`:`<div class="map-title">${escape(title)}</div>`}<div class="match-meta"><span>${t(match.environment)}</span><span>${t('players',{size:match.teamSize})}</span><span>${escape(gameName(language,'rules',match.rule,match.rule))}</span>${tag?`<span class="tag special">${escape(tag)}</span>`:''}</div>${periodNote}${random?`<details><summary>${t('mapPool',{count:match.maps.length})}</summary><div class="pool">${chips}</div></details>`:''}${roster}</div></div>`;
 }
 
 function groups(matches, current = false) {
@@ -104,7 +105,7 @@ async function start() {
     if(data) render();
     else if($('status').classList.contains('error')) $('status').textContent=t('fetchError');
   });
-  const response=await fetch('schedule-data.json?v=5', {cache:'no-cache'});
+  const response=await fetch('schedule-data.json?v=6', {cache:'no-cache'});
   if(!response.ok) throw new Error(t('fetchError'));
   const snapshot=await response.json();
   if(snapshot.schemaVersion!==1||!/^\d{8}$/.test(snapshot.version)||snapshot.scheduleOffsetMinutes!==540||!snapshot.modes?.rated||!snapshot.modes?.quick) throw new Error(t('dataError'));

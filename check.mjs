@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {dateStart, dayKey, slotAt, slotsForDay, matchesFilter} from './schedule.mjs';
-import {languages, messages, gameNames, translate, chooseLanguage} from './i18n.mjs';
+import {languages, messages, gameNames, translate, gameName, chooseLanguage} from './i18n.mjs';
 const text = readFileSync(process.argv[2] ?? new URL('./schedule-data.json', import.meta.url), 'utf8');
 const data = JSON.parse(text);
 const keys = (value, allowed) => assert.deepEqual(Object.keys(value).sort(), allowed.split(' ').sort());
@@ -65,7 +65,9 @@ for (const situation of Object.values(data.situations)) {
   }
 }
 for (const activity of Object.values(data.activities)) {
-  keys(activity, 'windows'); assert.ok(activity.windows.length > 0);
+  keys(activity, 'windows');
+  if (activity.windows === null) continue; // Explicitly unverified; use native weekly rotation.
+  assert.ok(Array.isArray(activity.windows) && activity.windows.length > 0);
   for (const window of activity.windows) {
     assert.equal(window.length, 2);
     assert.ok(Number.isFinite(Date.parse(window[0])) && Date.parse(window[0]) < Date.parse(window[1]));
@@ -91,6 +93,8 @@ assert.equal(slotAt(eventSample, Date.parse('2026-10-03T15:00:00Z')).matches.len
 assert.equal(slotAt(eventSample, Date.parse('2026-10-03T16:59:59Z')).matches.length, 1);
 assert.equal(slotAt(eventSample, Date.parse('2026-10-03T17:00:00Z')).matches.length, 0);
 assert.equal(slotAt(eventSample, Date.parse('2026-10-10T15:00:00Z')).matches.length, 0);
+eventSample.activities.test.windows = null;
+assert.equal(slotAt(eventSample, Date.parse('2026-10-10T15:00:00Z')).matches.length, 1);
 const taipei = slotsForDay(data, '2026-10-04', 480);
 assert.equal(taipei.length, 13);
 assert.equal(dayKey(taipei[0].start, 480), '2026-10-03');
@@ -121,11 +125,16 @@ for (const language of languages) {
     if (row.restriction) validText(gameNames[language].restrictions[row.restriction],`${language}/restrictions/${row.restriction}`);
   }
   for (const [id,situation] of Object.entries(data.situations)) {
-    validText(gameNames[language].situations[id],`${language}/situations/${id}`);
-    for (const team of Object.values(situation.teams)) for (const unit of team) validText(gameNames[language].units[unit.name],`${language}/units/${unit.name}`);
+    validText(gameName(language,'situations',id,situation.title),`${language}/situations/${id}`);
+    for (const team of Object.values(situation.teams)) for (const unit of team) validText(gameName(language,'units',unit.name,unit.name),`${language}/units/${unit.name}`);
   }
 }
 assert.equal(translate('en','players',{size:5}), '5 vs 5');
+assert.equal(gameName('zh-Hant','situations',999,'情境戰 ID 999'), '情境戰 ID 999');
+assert.equal(gameName('ja','situations',999,'情境戰 ID 999'), 'シチュエーションバトル ID 999');
+assert.equal(gameName('en','situations',999,'情境戰 ID 999'), 'Situation Battle ID 999');
+assert.equal(gameName('en','situations',85,'超越之力'), 'The Power to Transcend');
+assert.equal(gameName('en','units','未翻譯機體','未翻譯機體'), '未翻譯機體');
 assert.equal(chooseLanguage('?lang=ja','en',['zh-TW']), 'ja');
 assert.equal(chooseLanguage('?lang=invalid','en',['ja-JP']), 'en');
 assert.equal(chooseLanguage('',null,['fr-FR','ja-JP']), 'ja');

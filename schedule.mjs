@@ -29,7 +29,7 @@ export function slotAt(data, instant) {
     }
     const entries = block.days[day].filter(entry => entry.hour === hour).slice(0, 4).filter(entry => {
       const activity = data.activities?.[entry.activityKey];
-      return !activity || activity.windows.some(([begin, end]) => instant >= Date.parse(begin) && instant < Date.parse(end));
+      return !activity || activity.windows === null || activity.windows.some(([begin, end]) => instant >= Date.parse(begin) && instant < Date.parse(end));
     });
     matches.push(...entries.map(entry => ({...entry, mode})));
   }

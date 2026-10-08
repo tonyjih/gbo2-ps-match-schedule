@@ -10,12 +10,13 @@ export const messages = {
     timezone:'顯示時區', taipei:'台北 UTC+8', tokyo:'日本 UTC+9', utc:'UTC',
     hint:'依 PS 輪替表推算，正式服更新後可能變動。隨機場次顯示候選地圖，並非每場抽選結果。',
     loading:'讀取排程中…', current:'目前時段', daily:'當日時刻表', previous:'前一天', next:'後一天', today:'今天', queryDate:'查詢日期',
-    footerNote:'特殊場次依已核對的官方活動期間顯示，情境機體採用目前快照的專用配置。此 POC 不會即時確認維護、活動變更或最新排程。',
-    unofficial:'非官方查詢 POC · PS TSS', json:'查看排程資料', news:'活動公告', official:'官方網站',
+    footerNote:'特殊場次優先採用已核對的官方期間；期間待確認時依週輪替表推算並標示。情境機體採用目前快照的專用配置。此 POC 不會即時確認維護、活動變更或最新排程。',
+    unofficial:'非官方查詢 POC · PS TSS', news:'活動公告', official:'官方網站',
     noscript:'請啟用 JavaScript，以查詢不同日期與篩選場次。',
     randomGround:'地上隨機', randomSpace:'宇宙隨機', sortieMs:'出擊機體', fixedMs:'固定機體', unrestricted:'無限制',
     weekend:'週末限定戰', special:'特殊場次', roster:'情境機體 · A／B 隊', team:'{team} 隊',
-    rosterNote:'系統配發固定機體，採用情境專用性能。', players:'{size} 對 {size}', mapPool:'候選地圖 · {count} 張',
+    rosterNote:'系統配發固定機體，採用情境專用性能。未翻譯的機體名稱保留中文。', players:'{size} 對 {size}', mapPool:'候選地圖 · {count} 張',
+    situationId:'情境戰 ID {id}', periodUnverified:'活動期間待確認 · 依週輪替表推算',
     matchCount:'{count} 個場次', currentEmpty:'此時段沒有符合篩選的場次。', empty:'沒有符合的場次',
     dayEmpty:'此日期沒有符合篩選的場次。試試其他 COST 或地圖，或清除篩選。',
     countdown:'下次切換 {time} · 約 {minutes} 分鐘後', stats:'{slots} 個時段 · {matches} 個場次',
@@ -32,12 +33,13 @@ export const messages = {
     timezone:'表示タイムゾーン', taipei:'台北 UTC+8', tokyo:'日本 UTC+9', utc:'UTC',
     hint:'PS版のローテーションデータから予測しています。更新により変更される場合があります。ランダムMAPは候補一覧であり、実際に選ばれるMAPではありません。',
     loading:'スケジュールを読み込み中…', current:'現在の時間帯', daily:'1日のスケジュール', previous:'前日', next:'翌日', today:'今日', queryDate:'検索日',
-    footerNote:'特別戦は確認済みの公式開催期間に基づいて表示します。シチュエーションバトルのMSは現在のデータにある専用仕様です。このPOCはメンテナンス、イベント変更や最新スケジュールをリアルタイムで確認しません。',
-    unofficial:'非公式スケジュール POC · PS TSS', json:'スケジュールデータ', news:'イベント情報', official:'公式サイト',
+    footerNote:'特別戦は確認済みの公式開催期間を優先します。期間未確認の場合は週間ローテーションによる予測として表示します。MSは現在のデータにある専用仕様です。このPOCはメンテナンス、イベント変更や最新スケジュールをリアルタイムで確認しません。',
+    unofficial:'非公式スケジュール POC · PS TSS', news:'イベント情報', official:'公式サイト',
     noscript:'日付の検索や条件の絞り込みにはJavaScriptを有効にしてください。',
     randomGround:'地上ランダム', randomSpace:'宇宙ランダム', sortieMs:'出撃MS', fixedMs:'固定MS', unrestricted:'無制限',
     weekend:'週末限定戦', special:'特別戦', roster:'出撃MS · A／Bチーム', team:'{team}チーム',
-    rosterNote:'MSは自動で割り当てられ、シチュエーション専用の性能になります。', players:'{size} vs {size}', mapPool:'候補MAP · {count}種類',
+    rosterNote:'MSは自動で割り当てられ、シチュエーション専用の性能になります。未翻訳のMS名は中国語で表示します。', players:'{size} vs {size}', mapPool:'候補MAP · {count}種類',
+    situationId:'シチュエーションバトル ID {id}', periodUnverified:'開催期間未確認 · 週間ローテーションによる予測',
     matchCount:'{count}件', currentEmpty:'この時間帯に条件に合うマッチはありません。', empty:'条件に合うマッチはありません',
     dayEmpty:'この日に条件に合うマッチはありません。COSTやMAPを変更するか、条件をリセットしてください。',
     countdown:'次の切り替え {time} · あと約{minutes}分', stats:'{slots}枠 · {matches}件',
@@ -54,12 +56,13 @@ export const messages = {
     timezone:'Display time zone', taipei:'Taipei UTC+8', tokyo:'Japan UTC+9', utc:'UTC',
     hint:'Predicted from the PS rotation data and subject to game updates. Random MAPs show the candidate pool, not the MAP selected for each match.',
     loading:'Loading schedule…', current:'Current time slot', daily:'Daily schedule', previous:'Previous day', next:'Next day', today:'Today', queryDate:'Query date',
-    footerNote:'Special battles follow verified official event periods. Situation Battle MS use the dedicated configurations in the current snapshot. This POC does not check maintenance, event changes or the latest schedule in real time.',
-    unofficial:'Unofficial schedule POC · PS TSS', json:'Schedule data', news:'Event news', official:'Official website',
+    footerNote:'Special battles use verified official periods when available; otherwise they are marked as weekly rotation predictions. Situation Battle MS use the current snapshot configurations. This POC does not check maintenance, event changes or the latest schedule in real time.',
+    unofficial:'Unofficial schedule POC · PS TSS', news:'Event news', official:'Official website',
     noscript:'Enable JavaScript to select dates and filter matches.',
     randomGround:'Ground Random', randomSpace:'Space Random', sortieMs:'SORTIE MS', fixedMs:'Fixed MS', unrestricted:'Unrestricted',
     weekend:'Weekend Battle', special:'Special Battle', roster:'Assigned MS · Teams A / B', team:'Team {team}',
-    rosterNote:'MS are assigned automatically and use Situation Battle-specific stats.', players:'{size} vs {size}', mapPool:'MAP pool · {count} MAPs',
+    rosterNote:'MS are assigned automatically and use Situation Battle-specific stats. Untranslated MS names remain in Chinese.', players:'{size} vs {size}', mapPool:'MAP pool · {count} MAPs',
+    situationId:'Situation Battle ID {id}', periodUnverified:'Event period unverified · Weekly rotation prediction',
     matchCount:'Matches: {count}', currentEmpty:'No matches meet your filters in this time slot.', empty:'No matching battles',
     dayEmpty:'No matches meet your filters on this date. Try another COST or MAP, or clear the filters.',
     countdown:'Next rotation {time} · in about {minutes} min', stats:'Time slots: {slots} · Matches: {matches}',
@@ -96,7 +99,7 @@ export function translate(language, key, values = {}) {
 }
 
 export function gameName(language, kind, key, fallback) {
-  return gameNames[language]?.[kind]?.[key] ?? fallback;
+  return gameNames[language]?.[kind]?.[key] ?? (kind === 'situations' && language !== 'zh-Hant' ? translate(language,'situationId',{id:key}) : fallback);
 }
 
 export function chooseLanguage(search, saved, browserLanguages = []) {
