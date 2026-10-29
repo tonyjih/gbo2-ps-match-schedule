@@ -79,7 +79,7 @@ export const gameNames = {
       '目標洗牌':'シャッフルターゲット','混合編組':'ミックスアップ','亂鬥戰':'ブロールマッチ','決鬥戰':'デュエルマッチ'},
     restrictions:{'泛用機限定':'汎用機限定','突擊機限定':'強襲機限定','支援機限定':'支援機限定'},
     situations:{85:'超越する力'},
-    maps:{"10000":"山岳地帯","10200":"熱帯砂漠","10300":"港湾基地","10301":"港湾基地（早朝）","10302":"港湾基地（注水）","10500":"墜落跡地","10600":"無人都市","10700":"廃墟都市","10800":"北極基地","10900":"塹壕","11100":"密林地帯","11200":"軍事基地","11300":"軍港","11400":"地下基地","11700":"補給基地","11800":"コロニー落下地域","11900":"マスドライバー施設","12000":"峡谷","12100":"リゾート開発区域","12200":"鉱山都市","12300":"コロニー内部","12400":"大質量轍跡地","50000":"暗礁宙域","50100":"資源衛星","50200":"宇宙要塞内部","50300":"廃墟コロニー","50400":"月軌道デブリ帯"},
+    maps:{"10000":"山岳地帯","10200":"熱帯砂漠","10300":"港湾基地","10301":"港湾基地（早朝）","10302":"港湾基地（注水）","10500":"墜落跡地","10600":"無人都市","10700":"廃墟都市","10800":"北極基地","10900":"塹壕","11100":"密林地帯","11200":"軍事基地","11300":"軍港","11400":"地下基地","11600":"デュエル：G-1","11700":"補給基地","11800":"コロニー落下地域","11900":"マスドライバー施設","12000":"峡谷","12100":"リゾート開発区域","12200":"鉱山都市","12300":"コロニー内部","12400":"大質量轍跡地","50000":"暗礁宙域","50100":"資源衛星","50200":"宇宙要塞内部","50300":"廃墟コロニー","50400":"月軌道デブリ帯","50500":"デュエル：S-1"},
     units:{"蒼藍命運１號機":"ブルーディスティニー１号機","蒼藍命運２號機":"ブルーディスティニー２号機","蒼藍命運３號機":"ブルーディスティニー３号機","伊弗利特改":"イフリート改","ＦＡ・強襲特裝型":"ＦＡ・ストライカー・カスタム","蒼白騎士[陸戰重裝備規格]":"ペイルライダー[陸戦重装備仕様]","紅騎士":"レッドライダー","白色騎士":"ホワイトライダー","黑色騎士":"ブラックライダー","蒼白騎士兵團型":"ペイルライダー・キャバルリー"}
   },
   en: {
@@ -87,7 +87,7 @@ export const gameNames = {
       '目標洗牌':'Shuffle Target','混合編組':'Mix-Up','亂鬥戰':'Brawl Match','決鬥戰':'Duel Match'},
     restrictions:{'泛用機限定':'General MS only','突擊機限定':'Raid MS only','支援機限定':'Support MS only'},
     situations:{85:'The Power to Transcend'},
-    maps:{"10000":"Mountain","10200":"Tropical Desert","10300":"Port Base","10301":"Port Base (Sunrise)","10302":"Port Base (High Tide)","10500":"Impact Site","10600":"Deserted City","10700":"City Ruins","10800":"Arctic Base","10900":"Trenches","11100":"Jungle","11200":"Military Base","11300":"Military Port","11400":"Underground Base","11700":"Supply Depot","11800":"Colony Drop Area","11900":"Mass Driver Facility","12000":"Ravine","12100":"Resort Development District","12200":"Mining City","12300":"Colony Interior","12400":"Massive Impact Site","50000":"Dark Space","50100":"Resource Satellite","50200":"Space Fortress Interior","50300":"Derelict Colony","50400":"Lunar Debris Belt"},
+    maps:{"10000":"Mountain","10200":"Tropical Desert","10300":"Port Base","10301":"Port Base (Sunrise)","10302":"Port Base (High Tide)","10500":"Impact Site","10600":"Deserted City","10700":"City Ruins","10800":"Arctic Base","10900":"Trenches","11100":"Jungle","11200":"Military Base","11300":"Military Port","11400":"Underground Base","11600":"Duel: G-1","11700":"Supply Depot","11800":"Colony Drop Area","11900":"Mass Driver Facility","12000":"Ravine","12100":"Resort Development District","12200":"Mining City","12300":"Colony Interior","12400":"Massive Impact Site","50000":"Dark Space","50100":"Resource Satellite","50200":"Space Fortress Interior","50300":"Derelict Colony","50400":"Lunar Debris Belt","50500":"Duel: S-1"},
     units:{"蒼藍命運１號機":"Blue Destiny Unit-1","蒼藍命運２號機":"Blue Destiny Unit-2","蒼藍命運３號機":"Blue Destiny Unit-3","伊弗利特改":"Efreet Custom","ＦＡ・強襲特裝型":"Full Armor Striker Custom","蒼白騎士[陸戰重裝備規格]":"Pale Rider [Ground Heavy Arms]","紅騎士":"Red Rider","白色騎士":"White Rider","黑色騎士":"Black Rider","蒼白騎士兵團型":"Pale Rider Cavalry"}
   }
 };
